@@ -24,6 +24,15 @@ def extract():
     print("df is", df)
     df.to_csv('./data.csv')
 
+def transform():
+    print('i am transforming....')
+
+def load():
+    print("loading...")
+
+def api_extract():
+    print("extracting from api...")
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -42,10 +51,29 @@ with DAG(
     schedule_interval='@daily',  # Set the schedule interval as per your requirements
 ) as dag:
 
-    run_etl = PythonOperator(
-        task_id='complete_api_etl',
+    extraction = PythonOperator(
+        task_id='extract',
         python_callable=extract,
         dag=dag,
     )
 
-    run_etl
+    transforming = PythonOperator(
+        task_id = 'transform',
+        python_callable = transform,
+        dag=dag
+    )
+
+    loading = PythonOperator(
+        task_id = 'load',
+        python_callable = load,
+        dag=dag
+    )
+
+    api_extraction = PythonOperator(
+        task_id= 'api_extraction',
+        python_callable = api_extract,
+        dag=dag
+    )
+
+    extraction >> transforming >> loading
+    api_extraction >> loading
