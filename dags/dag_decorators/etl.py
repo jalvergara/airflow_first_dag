@@ -1,8 +1,6 @@
 import requests
 import pandas as pd
-import json
 import logging
-import os 
 
 def extract():
     url = 'https://api-colombia.com/api/v1/Region'
@@ -21,29 +19,26 @@ def extract():
     logging.info("extraction finished")
     df = pd.DataFrame(data, index=None)
     logging.debug('data extracted is ', df)
-    df.to_csv('./outputs/data.csv')
+    #df.to_csv('opt/airflow/outputs/data.csv')
     return df.to_json(orient='records')
 
-def transform(**kwargs):
-    print(kwargs)
-    logging.info("the kwargs are: ", kwargs)
-    ti = kwargs["ti"]
-    str_data = ti.xcom_pull(task_ids="extract_task")
-    json_data = json.loads(str_data)
-    data = pd.json_normalize(data=json_data)
-    logging.info(f"data is: {data}")
-    data['region2'] = data['region']
+def transform(json_data):
+    # str_data = json_data
+    print("data coming from extract:", json_data)
+    print("data type is: ", type(json_data))
+    #json_data = json.loads(str_data)
+    #data = pd.json_normalize(data=json_data)
+    #logging.info(f"data is: {data}")
+    #data['region2'] = data['region']
     #function transform
-    return data.to_json(orient='records')
+    #return data.to_json(orient='records')
+    return json_data
 
 
-def load(**kwargs):
+def load(json_data):
     logging.info("starting load process")
-    ti = kwargs["ti"]
-    str_data = ti.xcom_pull(task_ids="transform_task")
-    json_data = json.loads(str_data)
-    data = pd.json_normalize(data=json_data)
-    logging.info( f"data to load is: {data.head(5)}")
+    #data = pd.json_normalize(data=json_data)
+    logging.info( f"data to load is: {json_data}")
     logging.info("Loading data")
     #TODO: do the load here
     logging.info( "data loaded in: table_name")
